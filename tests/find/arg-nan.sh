@@ -1,33 +1,32 @@
-#! /bin/sh
-# Copyright (C) 2007-2023 Free Software Foundation, Inc.
-#
+#!/bin/sh
+# Ensure 'not-a-number' diagnostic for NAN arguments.
+
+# Copyright (C) 2023 Free Software Foundation, Inc.
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
+
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-rv=0
-srcdir="$1" ; shift
+. "${srcdir=.}/tests/init.sh"; fu_path_prepend_
+print_ver_ find
 
-for manpage
-do
-  what="lint check on manpage $manpage"
-  echo -n "$what: "
-  messages="$( groff -t -man ${srcdir}/${manpage} 2>&1 >/dev/null )"
-  if test -z "$messages" ; then
-      echo "passed"
-  else
-      echo "FAILED:" >&2
-      echo "$messages"     >&2
-      rv=1
-  fi
+# Expect no output.
+> exp || framework_failure_
+
+for o in used amin cmin mmin atime ctime mtime; do
+  find -$o NaN > outid not-a-number argument >out 2>err && fail=1
+  compare exp out || fail=1
+  grep -F 'find: invalid not-a-number argument:' err \
+    || { cat err; fail=1; }
 done
-exit $rv
+
+Exit $fail

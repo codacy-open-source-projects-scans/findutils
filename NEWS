@@ -13,6 +13,12 @@ GNU findutils NEWS - User visible changes.      -*- outline -*- (allout)
   The error diagnostic for non-numeric arguments has been improved as well.
   Likewise for -inum, -links and -uid.
 
+** Improvements
+
+  The find predicates -used, -amin, -cmin, -mmin, -atime, -ctime, and -mtime
+  now properly diagnose a not-a-number argument.  Previously, find dumped
+  core via an assertion.  [#64717]
+
 ** Changes to the build process
 
   findutils now builds again on systems with musl-libc.
@@ -29,6 +35,9 @@ GNU findutils NEWS - User visible changes.      -*- outline -*- (allout)
   option for all output formats now; this avoids files like find.info-[12].
 
   The xargs documentation now describes the double dash "--" option delimiter.
+
+  The xargs examples in the Texinfo manual now use the -L and --replace options
+  instead of the deprecated -l and -i options.  [#64480]
 
 
 * Noteworthy changes in release 4.9.0 (2022-02-22) [stable]
