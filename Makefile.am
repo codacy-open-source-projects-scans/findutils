@@ -1,6 +1,6 @@
 # Make findutils.
 
-# Copyright (C) 1996-2023 Free Software Foundation, Inc.
+# Copyright (C) 1996-2024 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,10 +110,14 @@ gnulib-sync update-gnulib-to-latest:
 			&& { echo "error: tree is dirty" >&2; exit 1; } || : \
 	    && git submodule foreach git pull origin master \
 	    && cp -v gnulib/doc/COPYINGv3 COPYING \
-	    && cp -v gnulib/doc/fdl-1.3.texi doc/fdl.texi \
-	    && cp -v gnulib/build-aux/bootstrap bootstrap \
+	    && cp -v gnulib/doc/fdl.texi doc/fdl.texi \
+	    && cp -v gnulib/top/autogen.sh autogen.sh \
+	    && cp -v gnulib/top/autopull.sh autopull.sh \
+	    && cp -v gnulib/top/bootstrap bootstrap \
+	    && cp -v gnulib/top/bootstrap-funclib.sh bootstrap-funclib.sh \
 	    && cp -v gnulib/tests/init.sh tests/init.sh \
-	    && git status --short -- gnulib COPYING doc/fdl.texi bootstrap \
+	    && git status --short -- gnulib COPYING doc/fdl.texi autogen.sh \
+		 autopull.sh bootstrap bootstrap-funclib.sh tests/init.sh \
 		 tests/init.sh \
 	)
 

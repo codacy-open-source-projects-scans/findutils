@@ -1,5 +1,5 @@
 # cfg.mk -- configuration file for the maintainer makefile provided by gnulib.
-# Copyright (C) 2010-2023 Free Software Foundation, Inc.
+# Copyright (C) 2010-2024 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@ exclude_file_name_regexp--sc_texinfo_acronym = doc/perm\.texi
 
 # List syntax-check exemptions.
 exclude_file_name_regexp--sc_bindtextdomain = \
-  ^(locate/frcode|lib/regexprops|lib/test_splitstring)\.c$$
+  ^(locate/frcode|lib/regexprops|lib/test_splitstring|find/getlimits)\.c$$
 
 # sc_prohibit_strcmp is broken because it gives false positives for
 # cases where neither argument is a string literal.

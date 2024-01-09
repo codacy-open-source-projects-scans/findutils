@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in -*-Makefile-*-.
 
-## Copyright (C) 2007-2023 Free Software Foundation, Inc.
+## Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -122,6 +122,7 @@ all_tests = \
   tests/find/used.sh \
   tests/find/newer.sh \
   tests/find/opt-numeric-arg.sh \
+  tests/find/user-group-max.sh \
   tests/xargs/conflicting_opts.sh \
   tests/xargs/verbose-quote.sh \
   tests/find/arg-nan.sh \
