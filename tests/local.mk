@@ -25,7 +25,7 @@ root_tests = $(all_root_tests)
 
 EXTRA_DIST += $(all_tests)
 
-TEST_EXTENSIONS = .sh
+TEST_EXTENSIONS = .sh .c
 
 SH_LOG_COMPILER = $(SHELL)
 
@@ -82,6 +82,8 @@ EXTRA_DIST += \
 all_root_tests = \
   tests/find/type_list.sh
 
+noinst_PROGRAMS = \
+	tests/xargs/test-sigusr
 
 ALL_RECURSIVE_TARGETS += check-root
 .PHONY: check-root
@@ -108,6 +110,7 @@ all_tests = \
   tests/misc/help-version.sh \
   tests/find/depth-unreadable-dir.sh \
   tests/find/inode-zero.sh \
+  tests/xargs/test-sigusr$(EXEEXT) \
   tests/find/many-dir-entries-vs-OOM.sh \
   tests/find/name-lbracket-literal.sh \
   tests/find/name-slash.sh \

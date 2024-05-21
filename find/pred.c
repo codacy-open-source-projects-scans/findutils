@@ -38,7 +38,7 @@
 #include "areadlink.h"
 #include "dirname.h"
 #include "fcntl--.h"
-#include "fnmatch.h"
+#include <fnmatch.h>
 #include "stat-size.h"
 #include "stat-time.h"
 #include "yesno.h"
@@ -376,7 +376,7 @@ pred_fls (const char *pathname, struct stat *stat_buf, struct predicate *pred_pt
   list_file (pathname, state.cwd_dir_fd, state.rel_pathname, stat_buf,
 	     options.start_time.tv_sec,
 	     options.output_block_size,
-	     pred_ptr->literal_control_chars, stream);
+	     options.literal_control_chars, stream);
   return true;
 }
 
@@ -700,6 +700,16 @@ is_ok (const char *program, const char *arg)
   fflush (stderr);
   return yesno ();
 }
+
+bool
+predicate_uses_exec(const struct predicate* p)
+{
+  return pred_is(p, pred_exec)
+    || pred_is(p, pred_execdir)
+    || pred_is(p, pred_ok)
+    || pred_is(p, pred_okdir);
+}
+
 
 bool
 pred_ok (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)

@@ -408,7 +408,7 @@ main (int argc, char **argv)
   void (*act_on_init_result)(void) = noop;
   enum BC_INIT_STATUS bcstatus;
   enum { XARGS_POSIX_HEADROOM = 2048u };
-  struct sigaction sigact;
+  bool catch_usr_signals = false;
 
   /* We #define __STDC_LIMIT_MACROS above for its side effect on
    * <limits.h>, but we use it here to avoid getting what would
@@ -671,6 +671,12 @@ main (int argc, char **argv)
 	case 'P':
 	  /* Allow only up to MAX_PROC_MAX child processes. */
 	  proc_max = parse_num (optarg, 'P', 0L, MAX_PROC_MAX, 1);
+#if defined SIGUSR1 && defined SIGUSR2
+	  catch_usr_signals = true;
+#else
+	  error (0, 0, _("SIGUSR1 and SIGUSR2 are not both defined, so the -P option does nothing."));
+	  proc_max = 1;
+#endif
 	  break;
 
         case 'a':
@@ -723,25 +729,29 @@ main (int argc, char **argv)
   act_on_init_result ();
   assert (BC_INIT_OK == bcstatus);
 
+  if (catch_usr_signals)
+    {
 #ifdef SIGUSR1
 # ifdef SIGUSR2
-  /* Accept signals to increase or decrease the number of running
-     child processes.  Do this as early as possible after setting
-     proc_max.  */
-  sigact.sa_handler = increment_proc_max;
-  sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags = 0;
-  if (0 != sigaction (SIGUSR1, &sigact, (struct sigaction *)NULL))
-	  error (0, errno, _("Cannot set SIGUSR1 signal handler"));
+      struct sigaction sigact;
 
-  sigact.sa_handler = decrement_proc_max;
-  sigemptyset(&sigact.sa_mask);
-  sigact.sa_flags = 0;
-  if (0 != sigaction (SIGUSR2, &sigact, (struct sigaction *)NULL))
-	  error (0, errno, _("Cannot set SIGUSR2 signal handler"));
+      /* Accept signals to increase or decrease the number of running
+	 child processes.  Do this as early as possible after setting
+	 proc_max.  */
+      sigact.sa_handler = increment_proc_max;
+      sigemptyset(&sigact.sa_mask);
+      sigact.sa_flags = SA_RESTART;
+      if (0 != sigaction (SIGUSR1, &sigact, (struct sigaction *)NULL))
+	error (0, errno, _("Cannot set SIGUSR1 signal handler"));
+
+      sigact.sa_handler = decrement_proc_max;
+      sigemptyset(&sigact.sa_mask);
+      sigact.sa_flags = SA_RESTART;
+      if (0 != sigaction (SIGUSR2, &sigact, (struct sigaction *)NULL))
+	error (0, errno, _("Cannot set SIGUSR2 signal handler"));
 # endif /* SIGUSR2 */
 #endif /* SIGUSR1 */
-
+    }
 
   if (0 == strcmp (input_file, "-"))
     {
@@ -920,6 +930,8 @@ read_line (void)
 
       if (c == EOF)
 	{
+	  if (EINTR == errno)
+	    continue;
 	  /* COMPAT: SYSV seems to ignore stuff on a line that
 	     ends without a \n; we don't.  */
 	  eof = true;
@@ -1095,6 +1107,8 @@ read_string (void)
       int c = getc (input_stream);
       if (c == EOF)
 	{
+	  if (EINTR == errno)
+	    continue;
 	  eof = true;
 	  if (p == linebuf)
 	    return -1;
@@ -1494,6 +1508,7 @@ static void
 wait_for_proc (bool all, unsigned int minreap)
 {
   unsigned int reaped = 0;
+  int deferred_exit_status = 0;
 
   while (procs_executing)
     {
@@ -1576,17 +1591,44 @@ wait_for_proc (bool all, unsigned int minreap)
       procs_executing--;
       reaped++;
 
+#define set_deferred_exit_status(n) \
+      do \
+      { \
+	if (deferred_exit_status < n)  \
+	  { \
+	    deferred_exit_status = n; \
+	  } \
+      } while (0)
+
       if (WEXITSTATUS (status) == CHILD_EXIT_PLEASE_STOP_IMMEDIATELY)
-	error (XARGS_EXIT_CLIENT_EXIT_255, 0,
-	       _("%s: exited with status 255; aborting"), bc_state.cmd_argv[0]);
+	{
+	  error (0, 0, _("%s: exited with status 255; aborting"), bc_state.cmd_argv[0]);
+	  set_deferred_exit_status(XARGS_EXIT_CLIENT_EXIT_255);
+	}
       if (WIFSTOPPED (status))
-	error (XARGS_EXIT_CLIENT_FATAL_SIG, 0,
-	       _("%s: stopped by signal %d"), bc_state.cmd_argv[0], WSTOPSIG (status));
+	{
+	  error (0, 0, _("%s: stopped by signal %d"), bc_state.cmd_argv[0], WSTOPSIG (status));
+	  set_deferred_exit_status(XARGS_EXIT_CLIENT_FATAL_SIG);
+	}
       if (WIFSIGNALED (status))
-	error (XARGS_EXIT_CLIENT_FATAL_SIG, 0,
-	       _("%s: terminated by signal %d"), bc_state.cmd_argv[0], WTERMSIG (status));
+	{
+	  error (0, 0,
+		 _("%s: terminated by signal %d"), bc_state.cmd_argv[0], WTERMSIG (status));
+	  set_deferred_exit_status(XARGS_EXIT_CLIENT_FATAL_SIG);
+	}
       if (WEXITSTATUS (status) != 0)
-	child_error = XARGS_EXIT_CLIENT_EXIT_NONZERO;
+	{
+	  child_error = XARGS_EXIT_CLIENT_EXIT_NONZERO;
+	}
+      if (deferred_exit_status && !all)
+	{
+	  break;
+	}
+    }
+  if (deferred_exit_status)
+    {
+      child_error = deferred_exit_status > child_error ? deferred_exit_status : child_error;
+      exit (child_error);
     }
 }
 

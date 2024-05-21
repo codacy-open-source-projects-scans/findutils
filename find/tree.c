@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 /* gnulib headers. */
-#include "fnmatch.h"
+#include <fnmatch.h>
 #include "xalloc.h"
 
 /* find headers. */
@@ -529,7 +529,7 @@ consider_arm_swap (struct predicate *p)
 {
   int left_cost, right_cost;
   const char *reason = NULL;
-  struct predicate **pl, **pr;
+  struct predicate **pl = NULL, **pr = NULL;
 
   if (BI_OP != p->p_type)
     reason = "Not a binary operation";
@@ -540,14 +540,18 @@ consider_arm_swap (struct predicate *p)
 	reason = "Doesn't have two arms";
     }
 
-
   if (!reason)
     {
       if (NULL == p->pred_left->pred_right)
-	reason = "Left arm has no child on RHS";
+	{
+	  reason = "Left arm has no child on RHS";
+	}
+      else
+	{
+	  pr = &p->pred_right;
+	  pl = &p->pred_left->pred_right;
+	}
     }
-  pr = &p->pred_right;
-  pl = &p->pred_left->pred_right;
 
   if (!reason)
     {
@@ -1056,7 +1060,7 @@ get_pred_cost (const struct predicate *p)
       data_requirement_cost = NeedsNothing;
     }
 
-  if (pred_is (p, pred_exec) || pred_is(p, pred_execdir))
+  if (predicate_uses_exec (p))
     {
       if (p->args.exec_vec.multiple)
 	inherent_cost = NeedsEventualExec;
@@ -1501,7 +1505,6 @@ get_new_pred (const struct parser_table *entry)
   last_pred->need_type = true;
   last_pred->p_cost = NeedsUnknown;
   last_pred->arg_text = "ThisShouldBeSetToSomethingElse";
-  last_pred->literal_control_chars = options.literal_control_chars;
   last_pred->est_success_rate = 1.0;
   init_pred_perf (last_pred);
   return last_pred;

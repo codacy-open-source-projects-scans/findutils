@@ -32,8 +32,7 @@
 
 
 /* gnulib headers. */
-#include "fnmatch.h"
-#include "fts_.h"
+#include <fnmatch.h>
 #include "intprops.h"
 #include "modechange.h"
 #include "mountlist.h"
@@ -52,7 +51,7 @@
 
 /* At the moment, we include this after gnulib headers, since it uses
    some of the same names for function attribute macros as gnulib does,
-   since I plan to make gcc-sttrigbutes a gnulib module.  However, for
+   since I plan to make gcc-attributes a gnulib module.  However, for
    now, I haven't made the wholesale edits to gnulib that this would
    require.   Including this file last simply minimises the number of
    compiler warnings about macro redefinition (in gnulib headers).
@@ -157,9 +156,6 @@ static bool parse_warn          (const struct parser_table*, char *argv[], int *
 static bool parse_xtype         (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_quit          (const struct parser_table*, char *argv[], int *arg_ptr);
 static bool parse_context       (const struct parser_table*, char *argv[], int *arg_ptr);
-#if 0
-static bool parse_show_control_chars (const struct parser_table*, char *argv[], int *arg_ptr);
-#endif
 
 static bool parse_help (const struct parser_table* entry, char **argv, int *arg_ptr)
   _GL_ATTRIBUTE_NORETURN;
@@ -305,9 +301,6 @@ static struct parser_table const parse_table[] =
   PARSE_TEST       ("regex",                 regex),	     /* GNU */
   PARSE_POSOPT     ("regextype",             regextype),     /* GNU */
   PARSE_TEST       ("samefile",              samefile),	     /* GNU */
-#if 0
-  PARSE_OPTION     ("show-control-chars",    show_control_chars), /* GNU, 4.3.0+ */
-#endif
   PARSE_TEST       ("size",                  size), /* POSIX */
   PARSE_TEST       ("type",                  type), /* POSIX */
   PARSE_TEST       ("uid",                   uid),	     /* GNU */
@@ -2055,7 +2048,7 @@ parse_size (const struct parser_table* entry, char **argv, int *arg_ptr)
   int blksize = 512;
   int len;
 
-  /* XXX: cannot (yet) convert to ue collect_arg() as this
+  /* XXX: cannot (yet) convert to use collect_arg() as this
    * function modifies the args in-place.
    */
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
@@ -2296,49 +2289,6 @@ parse_samefile (const struct parser_table* entry, char **argv, int *arg_ptr)
   return true;
 }
 
-#if 0
-/* This function is commented out partly because support for it is
- * uneven.
- */
-static bool
-parse_show_control_chars (const struct parser_table* entry,
-			  char **argv,
-			  int *arg_ptr)
-{
-  const char *arg;
-  const char *errmsg = _("The -show-control-chars option takes "
-			 "a single argument which "
-			 "must be 'literal' or 'safe'");
-
-  if ((argv == NULL) || (argv[*arg_ptr] == NULL))
-    {
-      error (EXIT_FAILURE, errno, "%s", errmsg);
-      return false;
-    }
-  else
-    {
-      arg = argv[*arg_ptr];
-
-      if (0 == strcmp ("literal", arg))
-	{
-	  options.literal_control_chars = true;
-	}
-      else if (0 == strcmp ("safe", arg))
-	{
-	  options.literal_control_chars = false;
-	}
-      else
-	{
-	  error (EXIT_FAILURE, errno, "%s", errmsg);
-	  return false;
-	}
-      (*arg_ptr)++;		/* consume the argument. */
-      return true;
-    }
-}
-#endif
-
-
 static bool
 parse_true (const struct parser_table* entry, char **argv, int *arg_ptr)
 {
@@ -2466,59 +2416,41 @@ parse_user (const struct parser_table* entry, char **argv, int *arg_ptr)
 static bool
 parse_version (const struct parser_table* entry, char **argv, int *arg_ptr)
 {
-  bool has_features = false;
-  int flags;
-
+  (void) entry;
   (void) argv;
   (void) arg_ptr;
-  (void) entry;
 
   display_findutils_version ("find");
   printf (_("Features enabled: "));
 
 #if CACHE_IDS
   printf ("CACHE_IDS(ignored) ");
-  has_features = true;
 #endif
 #if defined HAVE_STRUCT_DIRENT_D_TYPE
   printf ("D_TYPE ");
-  has_features = true;
 #endif
 #if defined O_NOFOLLOW
   printf ("O_NOFOLLOW(%s) ",
 	  (options.open_nofollow_available ? "enabled" : "disabled"));
-  has_features = true;
 #endif
 #if defined LEAF_OPTIMISATION
   printf ("LEAF_OPTIMISATION ");
-  has_features = true;
 #endif
   if (0 < is_selinux_enabled ())
     {
       printf ("SELINUX ");
-      has_features = true;
     }
 
-  flags = 0;
-  if (is_fts_enabled (&flags))
+  if (is_fts_cwdfd_enabled ())
     {
-      printf ("FTS(");
-      has_features = true;
-
-      if (flags & FTS_CWDFD)
-	printf ("FTS_CWDFD");
-      printf (") ");
+      printf ("FTS(FTS_CWDFD) ");
+    }
+  else
+    {
+      printf ("FTS() ");
     }
 
   printf ("CBO(level=%d) ", (int)(options.optimisation_level));
-  has_features = true;
-
-  if (!has_features)
-    {
-      /* For the moment, leave this as English in case someone wants
-	 to parse these strings. */
-      printf ("none");
-    }
   printf ("\n");
 
   exit (EXIT_SUCCESS);
@@ -2855,6 +2787,7 @@ insert_exec_ok (const char *action,
   our_pred->side_effects = our_pred->no_default_print = true;
   our_pred->need_type = our_pred->need_stat = false;
 
+  assert(predicate_uses_exec (our_pred));
   execp = &our_pred->args.exec_vec;
   execp->wd_for_exec = NULL;
 
