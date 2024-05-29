@@ -296,7 +296,7 @@ predicate_is_cost_free (const struct predicate *p)
       pred_is(p, pred_ipath))
     {
       /* Traditionally (at least 4.1.7 through 4.2.x) GNU find always
-       * optimised these cases.
+       * optimized these cases.
        */
       return true;
     }
@@ -1430,7 +1430,10 @@ build_expression_tree (int argc, char *argv[], int end_of_leading_options)
   /* Check that the tree is in normalised order (opt_expr does this) */
   check_normalization (eval_tree, true);
 
-  do_arm_swaps (eval_tree);
+  if (options.optimisation_level > 1)
+    {
+      do_arm_swaps (eval_tree);
+    }
 
   /* Check that the tree is still in normalised order */
   check_normalization (eval_tree, true);

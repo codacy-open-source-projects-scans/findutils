@@ -468,7 +468,7 @@ pred_name_common (const char *pathname, const char *str, int flags)
 {
   bool b;
   /* We used to use last_component() here, but that would not allow us to modify the
-   * input string, which is const.   We could optimise by duplicating the string only
+   * input string, which is const.   We could optimize by duplicating the string only
    * if we need to modify it, and I'll do that if there is a measurable
    * performance difference on a machine built after 1990...
    */
@@ -1128,30 +1128,47 @@ pred_user (const char *pathname, struct stat *stat_buf, struct predicate *pred_p
     return (false);
 }
 
+static bool
+err_signals_broken_link(int errno_value)
+{
+  switch (errno_value)
+    {
+    case ELOOP:
+    case ENOENT:
+      /* EMLINK doesn't indicate a loop, that's what ELOOP is for. */
+      return true;
+    default:
+      return false;
+    }
+}
+
+
 bool
 pred_xtype (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
   struct stat sbuf;		/* local copy, not stat_buf because we're using a different stat method */
   int (*ystat) (const char*, struct stat *p);
 
+
   /* If we would normally stat the link itself, stat the target instead.
    * If we would normally follow the link, stat the link itself instead.
    */
-  if (following_links ())
-    ystat = optionp_stat;
-  else
+  const bool ystat_follows_links = !following_links();
+  if (ystat_follows_links)
     ystat = optionl_stat;
+  else
+    ystat = optionp_stat;
 
   set_stat_placeholders (&sbuf);
   if ((*ystat) (state.rel_pathname, &sbuf) != 0)
     {
-      if (following_links () && errno == ENOENT)
+      if (ystat_follows_links && err_signals_broken_link (errno))
 	{
 	  /* If we failed to follow the symlink,
 	   * fall back on looking at the symlink itself.
 	   */
 	  /* Mimic behavior of ls -lL. */
-	  return (pred_type (pathname, stat_buf, pred_ptr));
+	  return pred_type (pathname, stat_buf, pred_ptr);
 	}
       else
 	{
@@ -1163,7 +1180,7 @@ pred_xtype (const char *pathname, struct stat *stat_buf, struct predicate *pred_
   /* Now that we have our stat() information, query it in the same
    * way that -type does.
    */
-  return (pred_type (pathname, &sbuf, pred_ptr));
+  return pred_type (pathname, &sbuf, pred_ptr);
 }
 
 

@@ -778,7 +778,8 @@ dereference the link.  This can mean that even if you specify the
 properties of the file that the link points to (because you don't have
 sufficient permission).  In this situation, @code{find} uses the
 properties of the link itself.  This also occurs if a symbolic link
-exists but points to a file that is missing.
+exists but points to a file that is missing, or where the symbolic
+link points to itself (directly or indirectly).
 
 The options controlling the behaviour of @code{find} with respect to
 links are as follows:
@@ -1206,17 +1207,20 @@ represent any letter except @samp{l}):
 
 @table @samp
 @item @samp{-P -xtype l}
-True if the symbolic link is broken
+True if the symbolic link is broken or has an infinite loop
 @item @samp{-P -xtype X}
 True if the (ultimate) target file is of type @samp{X}.
 @item @samp{-L -xtype l}
 Always true
 @item @samp{-L -xtype X}
-False unless the symbolic link is broken
+False unless the symbolic link is broken or has an infinite loop
 @end table
 
-In other words, for symbolic links, @samp{-xtype} checks the type of
-the file that @samp{-type} does not check.
+In other words, for non-broken symbolic links, @samp{-xtype} checks
+the type of the file that @samp{-type} does not check.  For broken
+symbolic links (or loops), @samp{-xtype} behaves like @samp{-type}
+does.  Symbolic links pointing to things the user has no access to are
+not considered to be broken.
 
 The @samp{-H} option also affects the behaviour of @samp{-xtype}.
 When @samp{-H} is in effect, @samp{-xtype} behaves as if @samp{-L} had
@@ -3522,12 +3526,13 @@ Use of an unrecognised formatting directive with @samp{-fprintf}
 The @samp{-O@var{level}} option sets @code{find}'s optimisation level
 to @var{level}.  The default optimisation level is 1.
 
-At certain optimisation levels, @code{find} reorders tests to speed up
-execution while preserving the overall effect; that is, predicates
-with side effects are not reordered relative to each other.  The
-optimisations performed at each optimisation level are as follows.
+At certain optimisation levels (but not by default), @code{find}
+reorders tests to speed up execution while preserving the overall
+effect; that is, predicates with side effects are not reordered
+relative to each other.  The optimisations performed at each
+optimisation level are as follows.
 
-@table @samp
+@table @asis
 @item 0
 Currently equivalent to optimisation level 1.
 
@@ -3549,9 +3554,8 @@ type @samp{FOO} which is not known (that is, present in
 @file{/etc/mtab}) at the time @code{find} starts, that predicate is
 equivalent to @samp{-false}.
 
-
 @item 3
-At this optimisation level, the full cost-based query optimiser is
+At this optimisation level, the full cost-based query optimizer is
 enabled.  The order of tests is modified so that cheap (i.e., fast)
 tests are performed first and more expensive ones are performed later,
 if necessary.  Within each cost band, predicates are evaluated earlier
@@ -3561,6 +3565,14 @@ earlier, and for @samp{-a}, predicates which are likely to fail are
 evaluated earlier.
 @end table
 
+The re-ordering of operations performed by the cost-based optimizer
+can result in user-visible behaviour change.  For example, the
+@samp{-readable} and @samp{-empty} predicates are sensitive to
+re-ordering.  If they are run in the order @samp{-empty -readable}, an
+error message will be issued for unreadable directories.  If they are
+run in the order @samp{-readable -empty}, no error message will be
+issued. This is the reason why such operation re-ordering is not
+performed at the default optimisation level.
 
 @node Debug Options
 @subsection Debug Options
@@ -3577,7 +3589,7 @@ For a complete list of valid debug options, see the output of
 Valid debug options include:
 @table @samp
 @item tree
-Show the expression tree in its original and optimised form.
+Show the expression tree in its original and optimized form.
 @item stat
 Print messages as files are examined with the stat and lstat system
 calls.  The find program tries to minimise such calls.
