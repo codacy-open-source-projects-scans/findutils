@@ -1,5 +1,5 @@
 /* find -- search for files in a directory hierarchy (fts version)
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -188,27 +188,6 @@ visit (FTS *p, FTSENT *ent, struct stat *pstat)
     }
 }
 
-static const char*
-partial_quotearg_n (int n, char *s, size_t len, enum quoting_style style)
-{
-  if (0 == len)
-    {
-      return quotearg_n_style (n, style, "");
-    }
-  else
-    {
-      char saved;
-      const char *result;
-
-      saved = s[len];
-      s[len] = 0;
-      result = quotearg_n_style (n, style, s);
-      s[len] = saved;
-      return result;
-    }
-}
-
-
 /* We've detected a file system loop.   This is caused by one of
  * two things:
  *
@@ -218,7 +197,7 @@ partial_quotearg_n (int n, char *s, size_t len, enum quoting_style style)
  *
  * 2. We have hit a real cycle in the directory hierarchy.  In this
  *    case, we issue a diagnostic message (POSIX requires this) and we
- *    skip that directory entry.
+ *    will skip that directory entry.
  */
 static void
 issue_loop_warning (FTSENT * ent)
@@ -241,12 +220,8 @@ issue_loop_warning (FTSENT * ent)
        */
       error (0, 0,
              _("File system loop detected; "
-               "%s is part of the same file system loop as %s."),
-             safely_quote_err_filename (0, ent->fts_path),
-             partial_quotearg_n (1,
-                                 ent->fts_cycle->fts_path,
-                                 ent->fts_cycle->fts_pathlen,
-                                 options.err_quoting_style));
+               "the following directory is part of the cycle: %s"),
+             safely_quote_err_filename (0, ent->fts_path));
     }
 }
 
@@ -304,6 +279,9 @@ consider_visiting (FTS *p, FTSENT *ent)
     }
   if (ent->fts_info == FTS_DNR)
     {
+      /* Ignore ENOENT error for vanished directories.  */
+      if (ENOENT == ent->fts_errno && options.ignore_readdir_race)
+        return;
       nonfatal_target_file_error (ent->fts_errno, ent->fts_path);
       if (options.do_dir_first)
         {
@@ -355,7 +333,7 @@ consider_visiting (FTS *p, FTSENT *ent)
             }
           else
             {
-             /* Ignore unlink() error for vanished files.  */
+             /* Ignore ENOENT error for vanished files.  */
              if (ENOENT == ent->fts_errno && options.ignore_readdir_race)
                  return;
 

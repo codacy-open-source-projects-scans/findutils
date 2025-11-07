@@ -1,5 +1,5 @@
 /* defs.h -- data types and declarations.
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -461,11 +461,6 @@ PREDICATEFUNCTION pred_context;
 
 bool pred_quit (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
   _GL_ATTRIBUTE_NORETURN;
-
-
-
-char *find_pred_name (PRED_FUNC pred_func);
-
 
 void print_predicate (FILE *fp, const struct predicate *p);
 void print_tree (FILE*, struct predicate *node, int indent);

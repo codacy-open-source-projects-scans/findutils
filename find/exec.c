@@ -1,5 +1,5 @@
 /* exec.c -- Implementation of -exec, -execdir, -ok, -okdir.
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ impl_pred_exec (const char *pathname,
       target = buf = base_name (state.rel_pathname);
       if ('/' == target[0])
         {
-          /* find / execdir ls -d {} \; */
+          /* find / -execdir ls -d {} \; */
           prefix = NULL;
           pfxlen = 0;
         }

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Exercise -files0-from option.
 
-# Copyright (C) 2021-2024 Free Software Foundation, Inc.
+# Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -160,6 +160,16 @@ printf '%s\0' a ENOENT b \
   | returns_ 1 find -files0-from - -print > out 2> err || fail=1
 compare exp out || fail=1
 grep 'ENOENT' err || fail=1
+
+# Exercise passing -files0-from multiple times: only the last FILE shall be
+# taken, and the former one(s) shall silently be ignored.
+printf '%s\0' m1 > m1 || framework_failure_
+printf '%s\0' m2 > m2 || framework_failure_
+printf '%s\0' m3 > m3 || framework_failure_
+tr '\0' '\n' < m3 > exp || framework_failure_
+find -files0-from m1 -files0-from m2 -files0-from m3 > out 2> err || fail=1
+compare exp out || fail=1
+compare /dev/null err || fail=1
 
 # Demonstrate (the usual!) recursion ...
 mkdir d1 d1/d2 d1/d2/d3 && touch d1/d2/d3/file || framework_failure_

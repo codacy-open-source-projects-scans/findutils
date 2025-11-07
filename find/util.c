@@ -1,5 +1,5 @@
 /* util.c -- functions for initializing new tree elements, and other things.
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -148,7 +148,7 @@ show_valid_debug_options (int full)
     {
       for (i=0; i<N_DEBUGASSOC; ++i)
         {
-          fprintf (stdout, "%s%s", (i>0 ? ", " : ""), debugassoc[i].name);
+          fprintf (stdout, "%s%s", (i>0 ? ", " : "      "), debugassoc[i].name);
         }
     }
 }
@@ -188,8 +188,8 @@ Tests (N can be +N or -N or N):\n\
       -ctime N -empty -false -fstype TYPE -gid N -group NAME -ilname PATTERN\n\
       -iname PATTERN -inum N -iwholename PATTERN -iregex PATTERN\n\
       -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE\n\
-      -nouser -nogroup -path PATTERN -perm [-/]MODE -regex PATTERN\n\
-      -readable -writable -executable\n\
+      -newerXY REFERENCE -nouser -nogroup -path PATTERN -perm [-/]MODE\n\
+      -regex PATTERN -readable -writable -executable\n\
       -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n\
       -used N -user NAME -xtype [bcdpfls]\n"));
   HTL (_("\n\
@@ -204,9 +204,13 @@ Other common options:\n"));
   HTL (_("      --help                   display this help and exit\n"));
   HTL (_("      --version                output version information and exit\n\n"));
 
+  HTL (_("\n\
+In -newerXY, XY stands for the combination [aBcm][aBcmt]; see find(1).\n\
+\n"));
+
   show_valid_debug_options (0);
   HTL (_("\n\
-Use '-D help' for a description of the options, or see find(1)\n\
+Use '-D help' for a description of the options, or see find(1).\n\
 \n"));
 
   explain_how_to_report_bugs (stdout, program_name);
@@ -960,26 +964,6 @@ process_leading_options (int argc, char *argv[])
   return end_of_leading_options;
 }
 
-static struct timespec
-now(void)
-{
-  struct timespec retval;
-  struct timeval tv;
-  time_t t;
-
-  if (0 == gettimeofday (&tv, NULL))
-    {
-      retval.tv_sec  = tv.tv_sec;
-      retval.tv_nsec = tv.tv_usec * 1000; /* convert unit from microseconds to nanoseconds */
-      return retval;
-    }
-  t = time (NULL);
-  assert (t != (time_t)-1);
-  retval.tv_sec = t;
-  retval.tv_nsec = 0;
-  return retval;
-}
-
 void
 set_option_defaults (struct options *p)
 {
@@ -1021,7 +1005,7 @@ set_option_defaults (struct options *p)
   p->explicit_depth = false;
   p->maxdepth = p->mindepth = -1;
 
-  p->start_time = now ();
+  p->start_time = current_timespec ();
   p->cur_day_start.tv_sec = p->start_time.tv_sec - DAYSECS;
   p->cur_day_start.tv_nsec = p->start_time.tv_nsec;
 

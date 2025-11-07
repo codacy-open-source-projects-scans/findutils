@@ -1,5 +1,5 @@
 /* word_io.c -- word oriented I/O
-   Copyright (C) 2007-2024 Free Software Foundation, Inc.
+   Copyright (C) 2007-2025 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include <string.h>
 
 /* gnulib headers. */
-#include "byteswap.h"
+#include <endian.h>
 #include "quotearg.h"
 
 /* find headers. */
@@ -50,7 +50,7 @@ decode_value (const unsigned char data[],
   } u;
   u.ival = 0;
   memcpy (&u.data, data, WORDBYTES);
-  swapped = bswap_32(u.ival);   /* byteswapped */
+  swapped = htobe32 (u.ival);   /* byteswapped */
 
   if (*endian_state_flag == GetwordEndianStateInitial)
     {

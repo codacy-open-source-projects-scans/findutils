@@ -1,5 +1,5 @@
 #!/bin/sh
-# FIXME
+# Verify behavior for '-!', '-,', '-(', and '-)'.
 
 # Copyright (C) 2025 Free Software Foundation, Inc.
 
@@ -17,20 +17,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 . "${srcdir=.}/tests/init.sh"; fu_path_prepend_
-print_ver_ FIXME
+print_ver_ find
 
-# FIXME: skip_if_root_
-# FIXME: require_root_
+# Versions before and including 4.10 accepted the above mentioned operator
+# options (with a leading dash '-').
+# Findutils 4.11 issues a warning.
 
-# If used, these must *follow* init.sh.
-# FIXME: cleanup_() { rm -rf "$other_partition_tmpdir"; }
-# FIXME: . "$abs_srcdir/tests/other-fs-tmpdir"
-
-FIXME > out || fail=1
 cat <<\EOF > exp || framework_failure_
-FIXME
+find: warning: operator '-(' (with leading dash '-') will no longer be accepted in future findutils releases!
+find: warning: operator '-!' (with leading dash '-') will no longer be accepted in future findutils releases!
+find: warning: operator '-,' (with leading dash '-') will no longer be accepted in future findutils releases!
+find: warning: operator '-)' (with leading dash '-') will no longer be accepted in future findutils releases!
 EOF
 
-compare exp out || fail=1
+find '-(' '-!' -not -type c -, -type b '-)' 2>err || fail=1
+cat err
+compare exp err || fail=1
 
 Exit $fail

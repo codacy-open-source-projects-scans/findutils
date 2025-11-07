@@ -1,5 +1,5 @@
 /* parser.c -- convert the command line args into an expression tree.
-   Copyright (C) 1990-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2025 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -662,6 +662,20 @@ find_parser (const char *search_name)
     {
       if (strcmp (parse_table[i].parser_name, search_name) == 0)
         {
+          /* FIXME >4.11: fix parser to disallow dashed operators like '-!'.
+           * Meanwhile, issue a warning.  */
+          if (   (original_arg < search_name) /* with '-' */
+              && (ARG_PUNCTUATION == parse_table[i].type)
+              && (   search_name[0] == '!' || search_name[0] == ','
+                  || search_name[0] == '(' || search_name[0] == ')')
+              && (search_name[1] == '\0'))
+            {
+              error (0, 0,
+                     _("warning: operator '%s' (with leading dash '-') will "
+                       "no longer be accepted in future findutils releases!"),
+                    original_arg);
+            }
+
           return found_parser (original_arg, &parse_table[i]);
         }
     }
@@ -2473,9 +2487,6 @@ parse_context (const struct parser_table* entry, char **argv, int *arg_ptr)
   our_pred = insert_primary (entry, NULL);
   our_pred->est_success_rate = 0.01f;
   our_pred->need_stat = false;
-#ifdef DEBUG
-  our_pred->p_name = find_pred_name (pred_context);
-#endif /*DEBUG*/
   our_pred->args.scontext = argv[*arg_ptr];
 
   (*arg_ptr)++;
@@ -2770,7 +2781,7 @@ insert_exec_ok (const char *action,
 {
   int start, end;               /* Indexes in ARGV of start & end of cmd. */
   int i;                        /* Index into cmd args */
-  int saw_braces;               /* True if previous arg was '{}'. */
+  bool prev_was_braces_only;    /* Previous arg was '{}' (not e.g. 'Q' or '{}x'). */
   bool allow_plus;              /* True if + is a valid terminator */
   int brace_count;              /* Number of instances of {}. */
   const char *brace_arg;        /* Which arg did {} appear in? */
@@ -2827,28 +2838,35 @@ insert_exec_ok (const char *action,
    * Also figure out if the command is terminated by ";" or by "+".
    */
   start = *arg_ptr;
-  for (end = start, saw_braces=0, brace_count=0, brace_arg=NULL;
+  for (end = start, prev_was_braces_only=false, brace_count=0, brace_arg=NULL;
        (argv[end] != NULL)
        && ((argv[end][0] != ';') || (argv[end][1] != '\0'));
        end++)
     {
       /* For -exec and -execdir, "{} +" can terminate the command. */
-      if ( allow_plus
-           && argv[end][0] == '+' && argv[end][1] == 0
-           && saw_braces)
+      if (allow_plus && prev_was_braces_only
+           && argv[end][0] == '+' && argv[end][1] == 0)
         {
           our_pred->args.exec_vec.multiple = 1;
           break;
         }
 
-      saw_braces = 0;
+      prev_was_braces_only = false;
       if (mbsstr (argv[end], "{}"))
         {
-          saw_braces = 1;
+          if (0 == strcmp(argv[end], "{}"))
+            {
+              /* Savannah bug 66365: + only terminates the predicate
+               * immediately after an argument which is exactly, "{}".
+               * However, the "{}" in "x{}" should get expanded for
+               * the ";" case.
+               */
+              prev_was_braces_only = true;
+            }
           brace_arg = argv[end];
           ++brace_count;
 
-          if (0 == end && (func == pred_execdir || func == pred_okdir))
+          if (start == end && (func == pred_execdir || func == pred_okdir))
             {
               /* The POSIX standard says that {} replacement should
                * occur even in the utility name.  This is insecure

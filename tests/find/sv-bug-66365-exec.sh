@@ -1,8 +1,8 @@
 #!/bin/sh
-# Test that find -name treats the unquoted '[' argument literally.
-# See Savannah bug #32043.
+# Test that find -exec ... + treats the + as a terminator only when it
+# immediately follows a {}.  See Savannah bug #66365.
 
-# Copyright (C) 2011-2025 Free Software Foundation, Inc.
+# Copyright (C) 2024-2025 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,11 +20,8 @@
 . "${srcdir=.}/tests/init.sh"; fu_path_prepend_
 print_ver_ find
 
-# Prepare a file named '['.
-touch '[' || framework_failure_
-echo './[' > exp || framework_failure_
-
-find -name '[' -print > out || fail=1
+find . -prune -exec echo x{} + \; >| out
+echo 'x. +' >| exp || framework_failure_
 compare exp out || fail=1
 
 Exit $fail

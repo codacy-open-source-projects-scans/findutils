@@ -1,5 +1,5 @@
 # cfg.mk -- configuration file for the maintainer makefile provided by gnulib.
-# Copyright (C) 2010-2024 Free Software Foundation, Inc.
+# Copyright (C) 2010-2025 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ local-checks-to-skip += sc_error_message_period sc_error_message_uppercase \
 	sc_file_system sc_indent
 
 exclude_file_name_regexp--sc_obsolete_symbols = build-aux/src-sniff\.py
+exclude_file_name_regexp--sc_fsf_postal = build-aux/src-sniff\.py
 exclude_file_name_regexp--sc_space_tab = \
 	xargs/testsuite/(inputs/.*\.xi|xargs.(gnu|posix|sysv)/.*\.xo)|find/testsuite/test_escapechars\.golden$$
 

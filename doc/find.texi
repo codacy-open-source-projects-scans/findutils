@@ -30,7 +30,7 @@
 This manual documents version @value{VERSION} of the GNU utilities for finding
 files that match certain criteria and performing various operations on them.
 
-Copyright @copyright{} 1994--2024 Free Software Foundation, Inc.
+Copyright @copyright{} 1994--2025 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -328,10 +328,21 @@ connect primaries into more complex expressions.
 The @samp{-print} action is performed on all files for which the
 entire expression is true (@pxref{Print File Name}), unless the
 expression contains an action other than @samp{-prune} or
-@samp{-quit}. Actions which inhibit the default @samp{-print} are
-@samp{-delete}, @samp{-exec}, @samp{-execdir}, @samp{-ok},
-@samp{-okdir}, @samp{-fls}, @samp{-fprint}, @samp{-fprintf},
-@samp{-ls}, @samp{-print} and @samp{-printf}.
+@samp{-quit}.
+Actions which inhibit the default @samp{-print} are
+@samp{-delete},
+@samp{-execdir},
+@samp{-exec},
+@samp{-fls},
+@samp{-fprint0},
+@samp{-fprintf},
+@samp{-fprint},
+@samp{-ls},
+@samp{-okdir},
+@samp{-ok},
+@samp{-print0},
+@samp{-printf}
+and @samp{-print}.
 
 Options take effect immediately, rather than being evaluated for each
 file when their place in the expression is reached.  Therefore, for
@@ -808,7 +819,7 @@ Actions that can cause symbolic links to become broken while
 confusing behaviour.  Take for example the command line
 @samp{find -L . -type d -delete}.   This will delete empty
 directories.  If a subtree includes only directories and symbolic
-links to directoires, this command may still not successfully delete
+links to directories, this command may still not successfully delete
 it, since deletion of the target of the symbolic link will cause the
 symbolic link to become broken and @samp{-type d} is false for broken
 symbolic links.
@@ -1025,8 +1036,9 @@ command line.
 
 @deffn Test -newerXY reference
 Succeeds if timestamp @samp{X} of the file being considered is newer
-than timestamp @samp{Y} of the file @file{reference}.   The letters
-@samp{X} and @samp{Y} can be any of the following letters:
+than timestamp @samp{Y} of the file @file{reference}.
+Fails if the timestamps are @emph{equal}.
+The letters @samp{X} and @samp{Y} can be any of the following letters:
 
 @table @samp
 @item a
@@ -1066,7 +1078,8 @@ not UFS1 file systems.
 
 
 There are two ways to list files in @file{/usr} modified after
-February 1 of the current year.  One uses @samp{-newermt}:
+@emph{the start} of February 1 of the current year.  One uses
+@samp{-newermt}:
 
 @example
 find /usr -newermt "Feb 1"
@@ -1087,6 +1100,7 @@ rm -f /tmp/stamp$$
 True if the time of the last access (or status change or data modification)
 of the current file is more recent than that of the last data modification
 of the @var{reference} file.
+False if the timestamps are equal.
 As such, @samp{-anewer} is equivalent to @samp{-neweram},
 @samp{-cnewer} to @samp{-newercm}, and @samp{-newer} to @samp{-newermm}.
 
@@ -1536,7 +1550,7 @@ This is different to @samp{-prune} because @samp{-prune} only applies
 to the contents of pruned directories, while @samp{-quit} simply makes
 @code{find} stop immediately.  No child processes will be left
 running.  Any command lines which have been built by @samp{-exec
-... \+} or @samp{-execdir ... \+} are invoked before the program is
+... @{@} +} or @samp{-execdir ... \+} are invoked before the program is
 exited.  After @samp{-quit} is executed, no more files specified on
 the command line will be processed.  For example, @samp{find /tmp/foo
 /tmp/bar -print -quit} will print only @samp{/tmp/foo}.  One common
@@ -2318,13 +2332,16 @@ Here is how to run a command on one file at a time.
 @deffn Action -execdir command ;
 Execute @var{command}; true if @var{command} returns zero.  @code{find}
 takes all arguments after @samp{-execdir} to be part of the command until
-an argument consisting of @samp{;} is reached.  It replaces the string
-@samp{@{@}} by the current file name being processed everywhere it
-occurs in the command.  Both of these constructions need to be escaped
-(with a @samp{\}) or quoted to protect them from expansion by the
-shell.  The command is executed in the directory which @code{find}
-was searching at the time the action was executed (that is, @{@} will
-expand to a file in the local directory).
+an argument consisting of @samp{;} is reached.
+It replaces the string @samp{@{@}} by the current file name being processed
+everywhere it occurs in the command.
+Each file name except for the root directory @samp{/} is prepended with
+@samp{./}.
+Both of these constructions need to be escaped (with a @samp{\}) or quoted to
+protect them from expansion by the shell.
+The command is executed in the directory which @code{find} was searching at the
+time the action was executed (that is, @{@} will expand to a file in the local
+directory).
 
 For example, to compare each C header file in or below the current
 directory with the file @file{/tmp/master}:
@@ -2388,15 +2405,17 @@ The @samp{-execdir} and @samp{-exec} actions have variants that build
 command lines containing as many matched files as possible.
 
 @deffn Action -execdir command @{@} +
-This works as for @samp{-execdir command ;}, except that the result is
-always true, and the @samp{@{@}} at the end of the command is expanded
-to a list of names of matching files.  This expansion is done in such
-a way as to avoid exceeding the maximum command line length available
-on the system.  Only one @samp{@{@}} is allowed within the command,
-and it must appear at the end, immediately before the @samp{+}.  A
-@samp{+} appearing in any position other than immediately after
-@samp{@{@}} is not considered to be special (that is, it does not
-terminate the command).
+This works as for @samp{-execdir command ;}, except that the result is always
+true, and the @samp{@{@}} at the end of the command is expanded to a list of
+names of matching files.
+Each file name except for the root directory @samp{/} is prepended with
+@samp{./}.
+This expansion is done in such a way as to avoid exceeding the maximum command
+line length available on the system.
+Only one @samp{@{@}} is allowed within the command, and it must appear at the
+end, immediately before the @samp{+}.
+A @samp{+} appearing in any position other than immediately after @samp{@{@}}
+is not considered to be special (that is, it does not terminate the command).
 @end deffn
 
 
@@ -3351,7 +3370,7 @@ useful or which are not obvious are explained here.
 @section Leaf Optimisation
 
 Files in Unix file systems have a link count which indicates how many
-names point to the same inode.  Directories in Unix filssytems have a
+names point to the same inode.  Directories in Unix filesystems have a
 @file{..} entry which functions as a hard link to the parent directory
 and a @file{.} entry which functions as a link to the directory itself.
 The @file{..} entry of the root directory also points to the root.
@@ -3858,6 +3877,10 @@ Print the version number of @code{updatedb} and exit.
 @example
 xargs @r{[}@var{option}@dots{}@r{]} @r{[}@var{command} @r{[}@var{initial-arguments}@r{]}@r{]}
 @end example
+
+@code{xargs} executes the @var{command} - the default is @file{echo} - one or
+more times with any @var{initial-arguments} followed by arguments read from
+standard input.
 
 @code{xargs} exits with the following status:
 
@@ -4657,6 +4680,9 @@ there are lots of files to delete.  Since the task is to delete
 unwanted files, this is precisely the time we don't want things to go
 wrong.
 
+There is also a second problem with this method.  We will discuss that
+below.
+
 @subsection Making Use of @code{xargs}
 
 So, is there a way to be more efficient in the use of @code{fork()}
@@ -4730,8 +4756,7 @@ portable construct.  Support for @samp{-print0} is not universal.
 
 Although some other versions of Unix (notably BSD-derived ones)
 support @samp{-print0}, this is only required in POSIX from Issue 8
-(which as of 2024-06-03 has not yet been published). So, is there a
-more universal mechanism?
+(published 2024-06-14). So, is there a more universal mechanism?
 
 @subsection Going back to @code{-exec}
 
@@ -4998,7 +5023,7 @@ different ways to do it.
 The obvious but wrong answer is just to use @samp{-newer}:
 
 @smallexample
-find subdir -newer timestamp -exec touch -r @{@} timestamp \;
+find subdir -type f -newer timestamp -exec touch -r @{@} timestamp \;
 @end smallexample
 
 This does the right sort of thing but has a bug.  Suppose that two
@@ -5019,7 +5044,7 @@ compared against it, but that will reduce the performance of
 The @code{test} command can be used to compare timestamps:
 
 @smallexample
-find subdir -exec test @{@} -nt timestamp \; -exec touch -r @{@} timestamp \;
+find subdir -type f -exec test @{@} -nt timestamp \; -exec touch -r @{@} timestamp \;
 @end smallexample
 
 This will ensure that any changes made to the modification time of
@@ -5033,13 +5058,14 @@ We can of course still use @samp{-newer} to cut down on the number of
 calls to @code{test}:
 
 @smallexample
-find subdir -newer timestamp -and \
+find subdir -type f -newer timestamp -and \
      -exec test @{@} -nt timestamp \; -and \
      -exec touch -r @{@} timestamp \;
 @end smallexample
 
 Here, the @samp{-newer} test excludes all the files which are
-definitely older than the timestamp, but all the files which are newer
+definitely older than or the same age as
+the timestamp, but all the files which are newer
 than the old value of the timestamp are compared against the current
 updated timestamp.
 
@@ -5052,10 +5078,8 @@ It is possible to use the @samp{-printf} action to abandon the use of
 @code{test} entirely:
 
 @smallexample
-newest=$(find subdir -newer timestamp -printf "%A@@:%p\n" |
-           sort -n |
-           tail -n1 |
-           cut -d: -f2- )
+newest="$(find subdir -type f -newer timestamp -printf "%A@@:%p\n" |
+           env LC_ALL=C sh -c 'sort -n | tail -n1 | cut -d: -f2-' )"
 touch -r "$@{newest:-timestamp@}" timestamp
 @end smallexample
 
@@ -5063,19 +5087,20 @@ The command above works by generating a list of the timestamps and
 names of all the files which are newer than the timestamp.  The
 @code{sort}, @code{tail} and @code{cut} commands simply pull out the
 name of the file with the largest timestamp value (that is, the latest
-file).  The @code{touch} command is then used to update the timestamp,
+file).  We run those programs (which normally read and write text)
+with with the @env{LC_ALL} environment variable set to @samp{C} in
+order to avoid character encoding problems; file names are not
+guaranteed to have a valid (or consistent) character encoding.  The
+@code{touch} command is then used to update the timestamp,
 
 The @code{"$@{newest:-timestamp@}"} expression simply expands to the
 value of @code{$newest} if that variable is set, but to
 @file{timestamp} otherwise.  This ensures that an argument is always
 given to the @samp{-r} option of the @code{touch} command.
 
-This approach seems quite efficient, but unfortunately it has a
-problem.  Many operating systems now keep file modification time
-information at a granularity which is finer than one second.
-Findutils version 4.3.3 and later will print a fractional part with
-%A@@, but older versions will not.
-
+@c We used to warn the reader about older versions of Find where %A@
+@c didn't include a fractional part, but since Findutils 4.3.3 was
+@c released in 2007, people are unlikely to have a problem today.
 
 @subsection Solving the problem with @code{make}
 
@@ -5084,8 +5109,9 @@ use @code{find} to generate a @file{Makefile} file on the fly and then
 use @code{make} to update the timestamps:
 
 @smallexample
-makefile=$(mktemp)
+makefile="$(mktemp)"
 find subdir \
+        -type f \
         \( \! -xtype l \) \
         -newer timestamp \
         -printf "timestamp:: %p\n\ttouch -r %p timestamp\n\n" > "$makefile"
@@ -5105,14 +5131,15 @@ space), and do things more efficiently too.  The following command
 works with newlines and doesn't need to sort the list of filenames.
 
 @smallexample
-find subdir -newer timestamp -printf "%A@@:%p\0" |
+find subdir -type f -newer timestamp -printf "%A@@:%p\0" |
    perl -0 newest.pl |
    xargs --no-run-if-empty --null --replace \
       find @{@} -maxdepth 0 -newer timestamp -exec touch -r @{@} timestamp \;
 @end smallexample
 
 The first @code{find} command generates a list of files which are
-newer than the original timestamp file, and prints a list of them with
+newer than (and not the same age as) the original timestamp file,
+and prints a list of them with
 their timestamps.  The @file{newest.pl} script simply filters out all
 the filenames which have timestamps which are older than whatever the
 newest file is:
@@ -5174,13 +5201,24 @@ already found.
 
 @smallexample
 find repo/ \
--exec test -d @{@}/.svn \; -or \
--exec test -d @{@}/.git \; -or \
--exec test -d @{@}/CVS \; -print -prune
+  \( \
+    -exec test -d @{@}/.svn \; -or \
+    -exec test -d @{@}/.git \; -or \
+    -exec test -d @{@}/CVS \; \
+  \) -print -prune
+@end smallexample
+
+Output:
+
+@smallexample
+repo/project1
+repo/gnu/project2
+repo/gnu/project3
+repo/project4
 @end smallexample
 
 In this example, @command{test} is used to tell if we are currently
-examining a directory which appears to the a project's root directory
+examining a directory which appears to be a project's root directory
 (because it has an SCM subdirectory).  When we find a project root,
 there is no need to search inside it, and @code{-prune} makes sure
 that we descend no further.
