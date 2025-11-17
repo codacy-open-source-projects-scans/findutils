@@ -65,6 +65,10 @@ local-checks-to-skip += sc_two_space_separator_in_usage
 # 9e  1855268  67844 0.11
 export XZ_OPT = -7e
 
+# Partial substitutes for GNU extensions \< and \> in regexps.
+begword = (^|[^_[:alnum:]])
+endword = ($$|[^_[:alnum:]])
+
 # Some test inputs/outputs have trailing blanks.
 exclude_file_name_regexp--sc_trailing_blank = \
  ^COPYING|(po/.*\.po)|(find/testsuite/find.gnu/printf\.xo)|(xargs/testsuite/(inputs/.*\.xi|xargs\.(gnu|posix|sysv)/.*\.(x[oe])))$$
@@ -95,6 +99,13 @@ exclude_file_name_regexp--sc_bindtextdomain = \
 # sc_unmarked_diagnostics: exempt internal programs.
 exclude_file_name_regexp--sc_unmarked_diagnostics = \
   ^(tests/xargs/test-sigusr)\.c$$
+
+# Things that 'codespell' mistakenly flags as typos.
+codespell_ignore_words_list = afile,bu,debbugs,filll,fo,hel,ois,siz,ublic,TE,
+
+# Files to exclude from sc_codespell
+exclude_file_name_regexp--sc_codespell = \
+  ^(THANKS|build-aux/git-log-fix)$$
 
 # sc_prohibit_strcmp is broken because it gives false positives for
 # cases where neither argument is a string literal.
@@ -291,6 +302,24 @@ sc_spaces_not_tabs:
 		"xargs/*.[ch]" \
 	  && { echo '$(ME): Indent C sources with spaces, not tabs (fix with build-aux/tabs-to-spaces.sh)' 1>&2; exit 1; } \
 	  || :
+
+# Enforce standard references "standard input/output/error".
+sc_standard_outputs:
+	@cd $(srcdir) || exit 1; \
+	  GIT_PAGER= git grep -En '_\("[^"]*std(in|out|err)' -- '*/*.c' \
+	    && { echo '$@: use "standard ....." in translated strings' 1>&2; \
+		 fail=1; } || :; \
+	  GIT_PAGER= git grep -En '[^/]std(in|out|err)' -- \
+			'*/*.1' '*/*.5' 'doc/*.texi' \
+	    && { echo '$@: use "standard ....." in user docs' 1>&2; \
+		 fail=1; } || :; \
+	  exit $$fail
+
+sc_prohibit_NULL:
+	@prohibit='$(begword)NULL$(endword)'                            \
+	in_vc_files='\.[ch]$$'                                          \
+	halt='use nullptr instead'                                      \
+	  $(_sc_search_regexp)
 
 # Now that we have better tests, make this the default.
 export VERBOSE = yes

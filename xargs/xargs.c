@@ -102,10 +102,10 @@ static int nullwarning_given = 0;
 
 
 /* If nonzero, when this string is read on stdin, then it is treated as EOF.
-   IEEE Std 1003.1, 2004 Edition allows this to be NULL.
+   IEEE Std 1003.1, 2004 Edition allows this to be nullptr.
    In findutils releases up to and including 4.2.8, this was "_".
 */
-static char *eof_str = NULL;
+static char *eof_str = nullptr;
 
 /* Number of chars in the initial args.  */
 /* static int initial_argv_chars = 0; */
@@ -126,7 +126,7 @@ static bool procs_executed = false;
 static unsigned long int procs_executing = 0uL;
 
 /* List of child processes currently executing.  */
-static pid_t *pids = NULL;
+static pid_t *pids = nullptr;
 
 /* The number of allocated elements in `pids'. */
 static size_t pids_alloc = 0u;
@@ -164,7 +164,7 @@ static char input_delimiter = '\0';
  * load distribution.   We guarantee not to allow two processes to run
  * at the same time with the same value of this variable.
  */
-static char* slot_var_name = NULL;
+static char* slot_var_name = nullptr;
 
 enum LongOptionIdentifier
   {
@@ -173,25 +173,25 @@ enum LongOptionIdentifier
 
 static struct option const longopts[] =
 {
-  {"null", no_argument, NULL, '0'},
-  {"arg-file", required_argument, NULL, 'a'},
-  {"delimiter", required_argument, NULL, 'd'},
-  {"eof", optional_argument, NULL, 'e'},
-  {"replace", optional_argument, NULL, 'I'},
-  {"max-lines", optional_argument, NULL, 'l'},
-  {"max-args", required_argument, NULL, 'n'},
-  {"open-tty", no_argument, NULL, 'o'},
-  {"interactive", no_argument, NULL, 'p'},
-  {"no-run-if-empty", no_argument, NULL, 'r'},
-  {"max-chars", required_argument, NULL, 's'},
-  {"verbose", no_argument, NULL, 't'},
-  {"show-limits", no_argument, NULL, 'S'},
-  {"exit", no_argument, NULL, 'x'},
-  {"max-procs", required_argument, NULL, 'P'},
-  {"process-slot-var", required_argument, NULL, PROCESS_SLOT_VAR},
-  {"version", no_argument, NULL, 'v'},
-  {"help", no_argument, NULL, 'h'},
-  {NULL, no_argument, NULL, 0}
+  {"null", no_argument, nullptr, '0'},
+  {"arg-file", required_argument, nullptr, 'a'},
+  {"delimiter", required_argument, nullptr, 'd'},
+  {"eof", optional_argument, nullptr, 'e'},
+  {"replace", optional_argument, nullptr, 'I'},
+  {"max-lines", optional_argument, nullptr, 'l'},
+  {"max-args", required_argument, nullptr, 'n'},
+  {"open-tty", no_argument, nullptr, 'o'},
+  {"interactive", no_argument, nullptr, 'p'},
+  {"no-run-if-empty", no_argument, nullptr, 'r'},
+  {"max-chars", required_argument, nullptr, 's'},
+  {"verbose", no_argument, nullptr, 't'},
+  {"show-limits", no_argument, nullptr, 'S'},
+  {"exit", no_argument, nullptr, 'x'},
+  {"max-procs", required_argument, nullptr, 'P'},
+  {"process-slot-var", required_argument, nullptr, PROCESS_SLOT_VAR},
+  {"version", no_argument, nullptr, 'v'},
+  {"help", no_argument, nullptr, 'h'},
+  {nullptr, no_argument, nullptr, 0}
 };
 
 /* xargs exits with status values with specific meanings (this is a POSIX requirement).
@@ -201,7 +201,7 @@ enum XargsStatusValues {
   XARGS_EXIT_CLIENT_EXIT_NONZERO = 123, /* utility exited with nonzero status */
   XARGS_EXIT_CLIENT_EXIT_255 = 124,     /* utility exited with status 255 */
   XARGS_EXIT_CLIENT_FATAL_SIG = 125,    /* utility died from a fatal signal */
-  XARGS_EXIT_COMMAND_CANNOT_BE_RUN = 126, /* canot run the command */
+  XARGS_EXIT_COMMAND_CANNOT_BE_RUN = 126, /* cannot run the command */
   XARGS_EXIT_COMMAND_NOT_FOUND = 127,     /* cannot find the command */
 };
 /* Exit status values the child might use. */
@@ -248,13 +248,13 @@ get_char_oct_or_hex_escape (const char *s)
     }
   else
     {
-      p = NULL;                 /* Silence compiler warning. */
+      p = nullptr;                 /* Silence compiler warning. */
       error (EXIT_FAILURE, 0,
              _("Invalid escape sequence %s in input delimiter specification."),
              s);
     }
   errno = 0;
-  endp = NULL;
+  endp = nullptr;
   val = strtoul (p, &endp, base);
 
   /* This if condition is carefully constructed to do
@@ -368,7 +368,7 @@ static FILE* fopen_cloexec_for_read_only (const char *file_name)
   int fd = open_cloexec (file_name, O_RDONLY);
   if (fd < 0)
     {
-      return NULL;
+      return nullptr;
     }
   else
     {
@@ -378,7 +378,7 @@ static FILE* fopen_cloexec_for_read_only (const char *file_name)
           int saved_errno = errno;
           close (fd);
           errno = saved_errno;
-          return NULL;
+          return nullptr;
         }
       return result;
     }
@@ -538,7 +538,7 @@ main (int argc, char **argv)
           if (optarg && (strlen (optarg) > 0))
             eof_str = optarg;
           else
-            eof_str = NULL;
+            eof_str = nullptr;
           break;
 
         case 'h':
@@ -571,10 +571,10 @@ main (int argc, char **argv)
               warn_mutually_exclusive ("-L", "--max-args");
               bc_ctl.args_per_exec = 0;
             }
-          if (bc_ctl.replace_pat != NULL)
+          if (bc_ctl.replace_pat != nullptr)
             {
               warn_mutually_exclusive ("-L", "--replace");
-              bc_ctl.replace_pat = NULL;
+              bc_ctl.replace_pat = nullptr;
             }
           break;
 
@@ -589,10 +589,10 @@ main (int argc, char **argv)
               warn_mutually_exclusive ("--max-lines/-l", "--max-args");
               bc_ctl.args_per_exec = 0;
             }
-          if (bc_ctl.replace_pat != NULL)
+          if (bc_ctl.replace_pat != nullptr)
             {
               warn_mutually_exclusive ("--max-lines/-l", "--replace");
-              bc_ctl.replace_pat = NULL;
+              bc_ctl.replace_pat = nullptr;
             }
           break;
 
@@ -604,7 +604,7 @@ main (int argc, char **argv)
               warn_mutually_exclusive ("--max-args/-n", "--max-lines");
               bc_ctl.lines_per_exec = 0;
             }
-          if (bc_ctl.replace_pat != NULL)
+          if (bc_ctl.replace_pat != nullptr)
             {
               if (bc_ctl.args_per_exec == 1)
                 {
@@ -614,7 +614,7 @@ main (int argc, char **argv)
               else
                 {
                   warn_mutually_exclusive ("--max-args/-n", "--replace");
-                  bc_ctl.replace_pat = NULL;
+                  bc_ctl.replace_pat = nullptr;
                 }
             }
           break;
@@ -713,6 +713,7 @@ main (int argc, char **argv)
 
   if (eof_str && (read_args == read_string))
     {
+      /* TRANSLATORS: -0 == "--null", not option "o".  */
       error (0, 0,
              _("warning: the -E option has no effect if -0 or -d is used.\n"));
     }
@@ -739,13 +740,13 @@ main (int argc, char **argv)
       sigact.sa_handler = increment_proc_max;
       sigemptyset(&sigact.sa_mask);
       sigact.sa_flags = SA_RESTART;
-      if (0 != sigaction (SIGUSR1, &sigact, (struct sigaction *)NULL))
+      if (0 != sigaction (SIGUSR1, &sigact, (struct sigaction *)nullptr))
         error (0, errno, _("Cannot set SIGUSR1 signal handler"));
 
       sigact.sa_handler = decrement_proc_max;
       sigemptyset(&sigact.sa_mask);
       sigact.sa_flags = SA_RESTART;
-      if (0 != sigaction (SIGUSR2, &sigact, (struct sigaction *)NULL))
+      if (0 != sigaction (SIGUSR2, &sigact, (struct sigaction *)nullptr))
         error (0, errno, _("Cannot set SIGUSR2 signal handler"));
 # endif /* SIGUSR2 */
 #endif /* SIGUSR1 */
@@ -759,7 +760,7 @@ main (int argc, char **argv)
     {
       keep_stdin = 1;           /* see prep_child_for_exec () */
       input_stream = fopen_cloexec_for_read_only (input_file);
-      if (NULL == input_stream)
+      if (nullptr == input_stream)
         {
           error (EXIT_FAILURE, errno,
                  _("Cannot open input file %s"),
@@ -829,7 +830,7 @@ main (int argc, char **argv)
       for (; optind < argc; optind++)
         bc_push_arg (&bc_ctl, &bc_state,
                      argv[optind], strlen (argv[optind]) + 1,
-                     NULL, 0,
+                     nullptr, 0,
                      initial_args);
       initial_args = false;
       bc_ctl.initial_argc = bc_state.cmd_argc;
@@ -868,7 +869,7 @@ main (int argc, char **argv)
 
           bc_push_arg (&bc_ctl, &bc_state,
                        argv[optind], arglen[optind] + 1,
-                       NULL, 0,
+                       nullptr, 0,
                        initial_args);
           len--;
           initial_args = false;
@@ -876,7 +877,7 @@ main (int argc, char **argv)
           for (i = optind + 1; i < argc; i++)
             bc_do_insert (&bc_ctl, &bc_state,
                           argv[i], arglen[i],
-                          NULL, 0,
+                          nullptr, 0,
                           linebuf, len,
                           initial_args);
           bc_do_exec (&bc_ctl, &bc_state);
@@ -940,6 +941,7 @@ read_line (void)
           if (state == QUOTE)
             {
               exec_if_possible ();
+              /* TRANSLATORS: -0 == "--null", not option "o".  */
               error (EXIT_FAILURE, 0,
                      _("unmatched %s quote; by default quotes are special to "
                        "xargs unless you use the -0 option"),
@@ -950,7 +952,7 @@ read_line (void)
           if (!bc_ctl.replace_pat)
             bc_push_arg (&bc_ctl, &bc_state,
                          linebuf, len,
-                         NULL, 0,
+                         nullptr, 0,
                          initial_args);
           return len;
         }
@@ -990,7 +992,7 @@ read_line (void)
               if (!bc_ctl.replace_pat)
                 bc_push_arg (&bc_ctl, &bc_state,
                              linebuf, len,
-                             NULL, 0,
+                             nullptr, 0,
                              initial_args);
               return len;
             }
@@ -1010,7 +1012,7 @@ read_line (void)
                 }
               bc_push_arg (&bc_ctl, &bc_state,
                            linebuf, len,
-                           NULL, 0,
+                           nullptr, 0,
                            initial_args);
               p = linebuf;
               state = SPACE;
@@ -1035,6 +1037,7 @@ read_line (void)
           if (c == '\n')
             {
               exec_if_possible ();
+              /* TRANSLATORS: -0 == "--null", not option "o".  */
               error (EXIT_FAILURE, 0,
                      _("unmatched %s quote; by default quotes are special to "
                        "xargs unless you use the -0 option"),
@@ -1115,7 +1118,7 @@ read_string (void)
           if (!bc_ctl.replace_pat)
             bc_push_arg (&bc_ctl, &bc_state,
                          linebuf, len,
-                         NULL, 0,
+                         nullptr, 0,
                          initial_args);
           return len;
         }
@@ -1127,7 +1130,7 @@ read_string (void)
           if (!bc_ctl.replace_pat)
             bc_push_arg (&bc_ctl, &bc_state,
                          linebuf, len,
-                         NULL, 0,
+                         nullptr, 0,
                          initial_args);
           return len;
         }
@@ -1156,7 +1159,7 @@ print_args (bool ask)
                    (i == 0 ? "" : " "),
                    quotearg_n_style (0, shell_escape_quoting_style,
                                      bc_state.cmd_argv[i])) < 0)
-        error (EXIT_FAILURE, errno, _("Failed to write to stderr"));
+        error (EXIT_FAILURE, errno, _("Failed to write to standard error"));
     }
 
   if (ask)
@@ -1173,13 +1176,13 @@ print_args (bool ask)
         }
       fputs ("?...", stderr);
       if (fflush (stderr) != 0)
-        error (EXIT_FAILURE, errno, _("Failed to write to stderr"));
+        error (EXIT_FAILURE, errno, _("Failed to write to standard error"));
 
       c = savec = getc (tty_stream);
       while (c != EOF && c != '\n')
         c = getc (tty_stream);
       if (EOF == c)
-        error (EXIT_FAILURE, errno, _("Failed to read from stdin"));
+        error (EXIT_FAILURE, errno, _("Failed to read from standard input"));
       if (savec == 'y' || savec == 'Y')
         return true;
     }
@@ -1759,9 +1762,9 @@ usage (int status)
   HTL (_("  -l[MAX-LINES]                similar to -L but defaults to at most one non-\n"
          "                                 blank input line if MAX-LINES is not specified\n"));
   HTL (_("  -n, --max-args=MAX-ARGS      use at most MAX-ARGS arguments per command line\n"));
-  HTL (_("  -o, --open-tty               Reopen stdin as /dev/tty in the child process\n"
-         "                                 before executing the command; useful to run an\n"
-         "                                 interactive application.\n"));
+  HTL (_("  -o, --open-tty               Reopen standard input as /dev/tty in the child\n"
+         "                                 process before executing the command; useful to\n"
+         "                                 run an interactive application.\n"));
   HTL (_("  -P, --max-procs=MAX-PROCS    run at most MAX-PROCS processes at a time\n"));
   HTL (_("  -p, --interactive            prompt before running commands\n"));
   HTL (_("      --process-slot-var=VAR   set environment variable VAR in child processes\n"));

@@ -82,7 +82,7 @@ make_segment (struct segment **segment,
   (*segment)->segkind = kind;
   (*segment)->format_char[0] = format_char;
   (*segment)->format_char[1] = aux_format_char;
-  (*segment)->next = NULL;
+  (*segment)->next = nullptr;
   (*segment)->text_len = len;
 
   fmt = (*segment)->text = xmalloc (len + sizeof "d");
@@ -312,7 +312,7 @@ insert_fprintf (struct format_val *vec,
   our_pred->p_cost    = NeedsNothing;
 
   segmentp = &our_pred->args.printf_vec.segment;
-  *segmentp = NULL;
+  *segmentp = nullptr;
 
   for (fmt_editpos = segstart; *fmt_editpos; fmt_editpos++)
     {
@@ -473,9 +473,9 @@ scan_for_digit_differences (const char *p, const char *q,
 static char*
 do_time_format (const char *fmt, const struct tm *p, const char *ns, size_t ns_size)
 {
-  static char *buf = NULL;
+  static char *buf = nullptr;
   static size_t buf_size;
-  char *timefmt = NULL;
+  char *timefmt = nullptr;
   struct tm altered_time;
 
 
@@ -502,7 +502,7 @@ do_time_format (const char *fmt, const struct tm *p, const char *ns, size_t ns_s
    * on Solaris, since it unconditionally writes the terminating null
    * character.
    */
-  if (buf == NULL)
+  if (buf == nullptr)
     {
       buf_size = 1u;
       buf = xmalloc (buf_size);
@@ -588,7 +588,7 @@ format_date (struct timespec ts, int kind)
    * For example, some systems return junk in the tv_nsec part of
    * st_birthtime.  An example of this is the NetBSD-4.0-RELENG kernel
    * (at Sat Mar 24 18:46:46 2007) running a NetBSD-3.1-RELEASE
-   * runtime and examining files on an msdos filesytem.  So for that
+   * runtime and examining files on an msdos filesystem.  So for that
    * reason we set NS_BUF_LEN to 32, which is simply "long enough" as
    * opposed to "exactly the right size".  Note that the behaviour of
    * NetBSD appears to be a result of the use of uninitialized data,
@@ -698,7 +698,7 @@ format_date (struct timespec ts, int kind)
         *--p = '-'; /* XXX: Ugh, relying on internal details of human_readable(). */
 
       /* Add the nanoseconds part.  Because we cannot enforce a
-       * particlar implementation of human_readable, we cannot assume
+       * particular implementation of human_readable, we cannot assume
        * any particular value for (p-buf).  So we need to be careful
        * that there is enough space remaining in the buffer.
        */
@@ -968,7 +968,7 @@ do_fprintf (struct format_val *dest,
               *(s+1) = '\0';
 
             s = strrchr (pname, '/');
-            if (s == NULL)     /* No leading directories. */
+            if (s == nullptr)     /* No leading directories. */
               {
                 /* If there is no slash in the pathname, we still
                  * print the string because it contains characters
@@ -1019,12 +1019,12 @@ do_fprintf (struct format_val *dest,
           /* sanitised */
 #ifdef S_ISLNK
           {
-            char *linkname = NULL;
+            char *linkname = nullptr;
 
             if (S_ISLNK (stat_buf->st_mode))
               {
                 linkname = areadlinkat (state.cwd_dir_fd, state.rel_pathname);
-                if (linkname == NULL)
+                if (linkname == nullptr)
                   {
                     nonfatal_target_file_error (errno, pathname);
                     state.exit_status = EXIT_FAILURE;

@@ -63,7 +63,7 @@ option does this for you.
 If any invocation of the command exits with a status of 255,
 .B xargs
 will stop immediately without reading any further input.
-An error message is issued on stderr when this happens.
+An error message is issued on standard error when this happens.
 .
 .SH OPTIONS
 .TP
@@ -73,15 +73,16 @@ whitespace, and the quotes and backslash are not special (every
 character is taken literally).
 Disables the end-of-file string, which is treated like any other argument.
 Useful when input items might contain white space, quote marks, or backslashes.
-The GNU find (and from Issue 8, POSIX) \-print0 option produces input suitable for this mode.
+The GNU find (and from POSIX Issue 8, IEEE Std 1003.1\-2024)
+\-print0 option produces input suitable for this mode.
 
 .TP
 .BI "\-a " file ", \-\-arg\-file=" file
 Read items from
 .I file
 instead of standard input.
-If you use this option, stdin remains unchanged when commands are run.
-Otherwise, stdin is redirected from
+If you use this option, standard input remains unchanged when commands are run.
+Otherwise, standard input is redirected from
 .IR /dev/null .
 
 .TP
@@ -242,7 +243,7 @@ was started).
 .B Please note
 that it is up to the called processes to properly manage parallel
 access to shared resources.
-For example, if more than one of them tries to print to stdout,
+For example, if more than one of them tries to print to standard output,
 the output will be produced in an indeterminate order (and very
 likely mixed up) unless the processes collaborate in some way to
 prevent this.
@@ -254,7 +255,7 @@ arrange for each process to produce a separate output file (or
 otherwise use separate resources).
 .TP
 .B \-o, \-\-open\-tty
-Reopen stdin as
+Reopen standard input as
 .I /dev/tty
 in the child process before executing the command.
 This is useful if you want
@@ -360,8 +361,7 @@ i.e., it will reset the value of the offending option (given before)
 to its default value.
 Additionally,
 .B xargs
-will issue a warning diagnostic on
-.IR stderr .
+will issue a warning diagnostic on standard error.
 The exception to this rule is that the special
 .I max-args
 value
@@ -452,7 +452,7 @@ The long-standing
 .B \-0
 option of
 .B xargs
-will be included in Issue 8 of the POSIX standard.
+appeared first in Issue 8 (IEEE Std 1003.1\-2024) of the POSIX standard.
 
 As of GNU xargs version 4.2.9, the default behaviour of
 .B xargs
