@@ -1,5 +1,5 @@
 /* util.c -- functions for initializing new tree elements, and other things.
-   Copyright (C) 1990-2025 Free Software Foundation, Inc.
+   Copyright (C) 1990-2026 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1010,7 +1010,7 @@ set_option_defaults (struct options *p)
   p->cur_day_start.tv_nsec = p->start_time.tv_nsec;
 
   p->full_days = false;
-  p->stay_on_filesystem = false;
+  p->mount = p->xdev = false;
   p->ignore_readdir_race = false;
 
   if (p->posixly_correct)

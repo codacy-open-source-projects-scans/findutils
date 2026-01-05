@@ -1,5 +1,5 @@
 /* find -- search for files in a directory hierarchy (fts version)
-   Copyright (C) 1990-2025 Free Software Foundation, Inc.
+   Copyright (C) 1990-2026 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -480,7 +480,10 @@ find (char *arg)
       break;
     }
 
-  if (options.stay_on_filesystem)
+  if (options.mount)
+    ftsoptions |= FTS_MOUNT;
+
+  if (options.xdev)
     ftsoptions |= FTS_XDEV;
 
   p = fts_open (arglist, ftsoptions, nullptr);

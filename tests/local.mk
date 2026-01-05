@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in -*-Makefile-*-.
 
-## Copyright (C) 2007-2025 Free Software Foundation, Inc.
+## Copyright (C) 2007-2026 Free Software Foundation, Inc.
 
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -85,7 +85,9 @@ EXTRA_DIST += \
   tests/sample-test
 
 all_root_tests = \
-  tests/find/type_list.sh
+  tests/find/type_list.sh \
+  tests/find/mount-vs-xdev-bind.sh \
+  tests/find/mount-vs-xdev-other-fs.sh
 
 check_PROGRAMS = $(binary_tests)
 binary_tests = \
@@ -137,6 +139,7 @@ sh_tests = \
   tests/xargs/conflicting_opts.sh \
   tests/xargs/verbose-quote.sh \
   tests/find/arg-nan.sh \
+  tests/find/mount-vs-xdev.sh \
   $(all_root_tests)
 
 $(TEST_LOGS): $(PROGRAMS)
