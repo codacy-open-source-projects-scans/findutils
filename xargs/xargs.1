@@ -1,12 +1,32 @@
-.TH XARGS 1 \" -*- nroff -*-
+.TH XARGS 1 2024-06-03 findutils \" -*- nroff -*-
+.ie \n(.g \{\
+.  ds '  \(aq
+.  ds en \(en
+.  ds ~~ \~
+.\}
+.el \{\
+.  ds '  '
+.  ds en \-
+.  ds ~~ \ \" backslash, space
+.\}
+.
+.do if d TQ .ig
+.\" Add supplementary paragraph tag on its own line after TP.
+.de TQ
+.  br
+.  ns
+.  \" Do not quote the argument to `TP`; the user might specify
+.  \" their own quotes for multi-word tags or to exercise AT&T troff
+.  \" quoting rules.
+.  TP \\$1\"
+..
 .SH NAME
 xargs \- build and execute command lines from standard input
 .SH SYNOPSIS
 .B xargs
-.nh
-[\fIoptions\fR]
-[\fIcommand\fR [\fIinitial-arguments\fR]]
-.hy
+.RI [ option \*(~~.\|.\|.\&]
+.RI [ command ]
+.RI [ initial-argument \*(~~.\|.\|.]
 .
 .SH DESCRIPTION
 This manual page
@@ -67,26 +87,35 @@ An error message is issued on standard error when this happens.
 .
 .SH OPTIONS
 .TP
-.B \-0, \-\-null
+.B \-0
+.TQ
+.B \-\-null
 Input items are terminated by a null character instead of by
 whitespace, and the quotes and backslash are not special (every
 character is taken literally).
 Disables the end-of-file string, which is treated like any other argument.
 Useful when input items might contain white space, quote marks, or backslashes.
-The GNU find (and from POSIX Issue 8, IEEE Std 1003.1\-2024)
-\-print0 option produces input suitable for this mode.
-
+The GNU
+.B find
+(and from POSIX Issue 8, IEEE Std 1003.1\-2024)
+.B \-print0
+option produces input suitable for this mode.
+.
 .TP
-.BI "\-a " file ", \-\-arg\-file=" file
+.BI \-a\*(~~ file
+.TQ
+.BI \-\-arg\-file= file
 Read items from
 .I file
 instead of standard input.
 If you use this option, standard input remains unchanged when commands are run.
 Otherwise, standard input is redirected from
 .IR /dev/null .
-
+.
 .TP
-.BI "\-\-delimiter=" delim ", \-d" " delim"
+.BI \-\-delimiter= delim
+.TQ
+.BI \-d\*(~~ delim
 Input items are terminated by the specified character.
 The specified delimiter may be a single character, a C-style character escape such
 as
@@ -107,10 +136,11 @@ simply newline-separated items, although it is almost always better to
 design your program to use
 .B \-\-null
 where this is possible.
-
+.
 .TP
-.BI \-E " eof-str"
-Set the end-of-file string to \fIeof-str\fR.
+.BI \-E\*(~~ eof-str
+Set the end-of-file string to
+.IR eof-str .
 If the end-of-file
 string occurs as a line of input, the rest of the input is ignored.
 If neither
@@ -118,34 +148,54 @@ If neither
 nor
 .B \-e
 is used, no end-of-file string is used.
+.
 .TP
-.BR \-e "[\fIeof-str\fR], " "\-\-eof" [\fI=eof-str\fR]
+.\" We use font selection escape sequences here because usage of `\c` in
+.\" arguments to man(7) font macros is not portable to AT&T troff.  (The
+.\" formatter's input traps don't honor them; compare GNU troff's `it`
+.\" and `itc` requests.)
+.BR \-e [\fIeof-str\fP]
+.TQ
+.BR \-\-eof [ =\fIeof-str ]
 This option is a synonym for the
 .B \-E
 option.
 Use
 .B \-E
 instead,
-because it is POSIX compliant while this option is not.
-If \fIeof-str\fR is omitted, there is no end-of-file string.
+because it is POSIX-compliant while this option is not.
+If
+.I eof-str
+is omitted, there is no end-of-file string.
 If neither
 .B \-E
 nor
 .B \-e
 is used, no end-of-file string is used.
+.
 .TP
-.BI \-I " replace-str"
-Replace occurrences of \fIreplace-str\fR in the initial-arguments with
+.BI \-I\*(~~ replace-str
+Replace occurrences of
+.I replace-str
+in the initial-arguments with
 names read from standard input.
 Also, unquoted blanks do not
 terminate input items; instead the separator is the newline character.
 Implies
 .B \-x
 and
-.B \-L
-1.
+\*(lq\c
+.B "\-L 1\c"
+\*(rq.
+.
 .TP
-.BR \-i "[\fIreplace-str\fR], " "\-\-replace" [\fI=replace-str\fR]
+.\" We use font selection escape sequences here because usage of `\c` in
+.\" arguments to man(7) font macros is not portable to AT&T troff.  (The
+.\" formatter's input traps don't honor them; compare GNU troff's `it`
+.\" and `itc` requests.)
+.BR \-i [\fIreplace-str\fP]
+.TQ
+.BR \-\-replace [ =\fIreplace-str ]
 This option is a synonym for
 .BI \-I replace-str
 if
@@ -154,21 +204,33 @@ is specified.
 If the
 .I replace-str
 argument is missing, the effect is the same as
-.BR \-I {}.
+\*(lq\c
+.B \-I{}\c
+\*(rq.
 The
 .B \-i
 option is deprecated; use
 .B \-I
 instead.
+.
 .TP
-.BI \-L " max-lines"
-Use at most \fImax-lines\fR nonblank input lines per command line.
+.BI \-L\*(~~ max-lines
+Use at most
+.I max-lines
+nonblank input lines per command line.
 Trailing blanks cause an input line to be logically continued on the
 next input line.
 Implies
 .BR \-x .
+.
 .TP
-.BR \-l "[\fImax-lines\fR], " \-\-max-lines "[=\fImax-lines\fR]"
+.\" We use font selection escape sequences here because usage of `\c` in
+.\" arguments to man(7) font macros is not portable to AT&T troff.  (The
+.\" formatter's input traps don't honor them; compare GNU troff's `it`
+.\" and `itc` requests.)
+.BR \-l [\fImax-lines\fP]
+.TQ
+.BR \-\-max\-lines [ =\fImax-lines ]
 Synonym for the
 .B \-L
 option.
@@ -185,9 +247,14 @@ The
 option is deprecated since the POSIX standard specifies
 .B \-L
 instead.
+.
 .TP
-.BI \-n " max-args\fR, \fI" "\-\-max\-args" \fR=\fImax-args
-Use at most \fImax-args\fR arguments per command line.
+.BI \-n\*(~~ max-args
+.TQ
+.BI \-\-max\-args= max-args
+Use at most
+.I max-args
+arguments per command line.
 Fewer than
 .I max-args
 arguments will be used if the size (see the
@@ -197,8 +264,11 @@ option) is exceeded, unless the
 option is given, in which case
 .B xargs
 will exit.
+.
 .TP
-.BI \-P " max-procs\fR, \fI" \-\-max\-procs "\fR=\fImax-procs"
+.BI \-P\*(~~ max-procs
+.TQ
+.BI \-\-max\-procs= max-procs
 Run up to
 .I max-procs
 processes at a time; the default is 1.
@@ -229,7 +299,7 @@ another.
 .B xargs
 always waits for all child processes to exit before exiting itself
 (but see BUGS).
-
+.IP
 If you do not use the
 .B \-P
 option,
@@ -239,7 +309,7 @@ will terminate the program (unless they were blocked in the parent
 process before
 .B xargs
 was started).
-
+.IP
 .B Please note
 that it is up to the called processes to properly manage parallel
 access to shared resources.
@@ -253,49 +323,65 @@ but reduce performance.
 If you don't want to tolerate the performance difference, simply
 arrange for each process to produce a separate output file (or
 otherwise use separate resources).
+.
 .TP
-.B \-o, \-\-open\-tty
+.B \-o
+.TQ
+.B \-\-open\-tty
 Reopen standard input as
 .I /dev/tty
 in the child process before executing the command.
 This is useful if you want
 .B xargs
 to run an interactive application.
+.
 .TP
-.B \-p, \-\-interactive
+.B \-p
+.TQ
+.B \-\-interactive
 Prompt the user about whether to run each command line and read a line
 from the terminal.
 Only run the command line if the response starts with `y' or `Y'.
 Implies
 .BR \-t .
+.
 .TP
-.BR \-\-process\-slot\-var "=\fIname\fR"
+.BI \-\-process\-slot\-var= name
 Set the environment variable
 .I name
 to a unique value in each running child process.
 Values are reused once child processes exit.
 This can be used in a rudimentary load distribution scheme, for example.
+.
 .TP
-.B \-r, \-\-no\-run\-if\-empty
+.B \-r
+.TQ
+.B \-\-no\-run\-if\-empty
 If the standard input does not contain any nonblanks, do not run the
 command.
 Normally, the command is run once even if there is no input.
 This option is a GNU extension.
+.
 .TP
-.BI \-s " max-chars\fR, \fI" \-\-max\-chars "=\fImax-chars\fR"
-Use at most \fImax-chars\fR characters per command line, including the
+.BI \-s\*(~~ max-chars
+.TQ
+.BI \-\-max\-chars= max-chars
+Use at most
+.I max-chars
+characters per command line, including the
 command and initial-arguments and the terminating nulls at the ends of
 the argument strings.
 The largest allowed value is system-dependent, and is calculated as the
 argument length limit for exec, less the size of your environment,
-less 2048\~bytes of headroom.
-If this value is more than 128\~KiB, 128\~KiB is used as the default value;
+less 2048\*(~~bytes of headroom.
+If this value is more than 128\*(~~KiB, 128\*(~~KiB is used as the default value;
 otherwise, the default value is the maximum.
-1\~KiB is 1024 bytes.
+1\*(~~KiB is 1024 bytes.
 .B xargs
 automatically adapts to tighter constraints.
+.
 .TP
-.B "\-\-show\-limits"
+.B \-\-show\-limits
 Display the limits on the command-line length which are imposed by the
 operating system,
 .BR xargs '
@@ -309,50 +395,66 @@ Pipe the input from
 if you don't want
 .B xargs
 to do anything.
+.
 .TP
-.B \-t, \-\-verbose
+.B \-t
+.TQ
+.B \-\-verbose
 Print the command line on the standard error output before executing
 it.
+.
 .TP
-.B \-x, \-\-exit
+.B \-x
+.TQ
+.B \-\-exit
 Exit if the size (see the
 .B \-s
 option) is exceeded.
+.
 .TP
-.B "\-\-"
+.B \-\-
 Delimit the option list.
 Later arguments, if any, are treated as operands even if they begin with
-.IR \- .
+\*(lq\-\*(rq.
 For example,
-.B xargs \-\- \-\-help
+\*(lq\c
+.B "xargs \-\- \-\-help\c"
+\*(rq
 runs the command
 .I \-\-help
 (found in
 .IR PATH )
 instead of printing the usage text, and
-.B xargs \-\- \-\-mycommand
+\*(lq\c
+.B "xargs \-\- \-\-mycommand\c"
+\*(rq
 runs the command
 .I \-\-mycommand
 instead of rejecting this as unrecognized option.
+.
 .TP
-.B "\-\-help"
+.B \-\-help
 Print a summary of the options to
 .B xargs
 and exit.
+.
 .TP
-.B "\-\-version"
+.B \-\-version
 Print the version number of
 .B xargs
 and exit.
-.PP
+.
+.P
 The options
-.B \-\-max-lines
-(\fB\-L\fP, \fB\-l\fP),
+.B \-\-max\-lines
+.RB ( \-L ,
+.BR \-l ),
 .B \-\-replace
-(\fB\-I\fP, \fB\-i\fP)
+.RB ( \-I ,
+.BR \-i ),
 and
-.B \-\-max-args
-(\fB\-n\fP)
+.B \-\-max\-args
+.RB ( \-n )
 are mutually exclusive.
 If some of them are specified at the same time, then
 .B xargs
@@ -365,8 +467,10 @@ will issue a warning diagnostic on standard error.
 The exception to this rule is that the special
 .I max-args
 value
-.I 1
-('\fB\-n\fP\fI1\fP')
+\*(lq1\*(rq
+(as in \*(lq\c
+.B \-n1\c
+\*(rq)
 is ignored after the
 .B \-\-replace
 option and its aliases
@@ -374,37 +478,38 @@ option and its aliases
 and
 .BR \-i ,
 because it would not actually conflict.
-
+.
 .
 .SH "EXAMPLES"
 .nf
-.B find /tmp \-name core \-type f \-print | xargs /bin/rm \-f
-
+.B "find /tmp \-name core \-type f \-print | xargs /bin/rm \-f"
 .fi
+.P
 Find files named
-.B core
+.I core
 in or below the directory
-.B /tmp
+.I /tmp
 and delete them.
 Note that this will work incorrectly if there are
 any filenames containing newlines or spaces.
+.
 .P
-.B find /tmp \-name core \-type f \-print0 | xargs \-0 /bin/rm \-f
-
+.B "find /tmp \-name core \-type f \-print0 | xargs \-0 /bin/rm \-f"
+.P
 Find files named
-.B core
+.I core
 in or below the directory
-.B /tmp
+.I /tmp
 and delete them, processing filenames in such a way that file or
 directory names containing spaces or newlines are correctly handled.
-
+.
 .P
-.B find /tmp \-depth \-name core \-type f \-delete
-
+.B "find /tmp \-depth \-name core \-type f \-delete"
+.P
 Find files named
-.B core
+.I core
 in or below the directory
-.B /tmp
+.I /tmp
 and delete them, but more efficiently than in the previous example
 (because we avoid the need to use
 .BR fork (2)
@@ -415,11 +520,11 @@ to launch
 and we don't need the extra
 .B xargs
 process).
-
+.
 .P
 .nf
-.B cut \-d: \-f1 < /etc/passwd | sort | xargs echo
-
+.B "cut \-d: \-f1 < /etc/passwd | sort | xargs echo"
+.
 .fi
 Generates a compact listing of all the users on the system.
 .
@@ -430,7 +535,7 @@ exits with the following status:
 .IP 0
 if it succeeds
 .IP 123
-if any invocation of the command exited with status 1\(en125
+if any invocation of the command exited with status 1\*(en125
 .IP 124
 if the command exited with status 255
 .IP 125
@@ -442,7 +547,7 @@ if the command is not found
 .IP 1
 if some other error occurred.
 .RE
-
+.
 .P
 Exit codes greater than 128 are used by the shell to indicate that
 a program died due to a fatal signal.
@@ -453,8 +558,10 @@ The long-standing
 option of
 .B xargs
 appeared first in Issue 8 (IEEE Std 1003.1\-2024) of the POSIX standard.
-
-As of GNU xargs version 4.2.9, the default behaviour of
+.P
+As of GNU
+.I findutils
+version 4.2.9, the default behaviour of
 .B xargs
 is not to have a logical end-of-file marker.
 POSIX (IEEE Std 1003.1, 2004 Edition) allows this.
@@ -478,7 +585,7 @@ The
 .B \-\-show\-limits
 option can be used to discover the actual limits in force on the
 current system.
-
+.P
 In versions of
 .B xargs
 up to and including version 4.9.0, SIGUSR1 and SIGUSR2 would
@@ -489,12 +596,14 @@ to terminate even if the
 option was not used.
 .
 .SH "HISTORY"
-
+.
 The
 .B xargs
 program was invented by Herb Gellis at Bell Labs.
-See the Texinfo manual for findutils,
-.IR "Finding Files" ,
+See the Texinfo manual for
+.IR findutils ,
+chapter
+\*(lqFinding Files\*(rq,
 for more information.
 .
 .SH "BUGS"
@@ -511,14 +620,15 @@ commands
 .B xargs
 runs to apply to files that you didn't intend.
 For a more detailed discussion of this and related problems, please refer
-to the ``Security Considerations'' chapter in the findutils Texinfo
-documentation.
+to the \*(lqSecurity Considerations\*(rq chapter in the
+.I findutils
+Texinfo documentation.
 The
 .B \-execdir
 option of
 .B find
 can often be used as a more secure alternative.
-
+.P
 When you use the
 .B \-I
 option, each line read from the input is buffered internally.
@@ -538,7 +648,8 @@ uses, and you can also use an extra invocation of
 to ensure that very long lines do not occur.
 For example:
 .P
-.B somecommand | xargs \-s 50000 echo | xargs \-I '{}' \-s 100000 rm '{}'
+.B somecommand | xargs \-s 50000 echo | xargs \-I \*'{}\*' \-s 100000 \
+rm \*'{}\*'
 .P
 Here, the first invocation of
 .B xargs
@@ -569,15 +680,19 @@ would exit while some of its children were still running, if one of
 them exited with status 255.
 .
 .SH "REPORTING BUGS"
-GNU findutils online help: <https://www.gnu.org/software/findutils/#get-help>
+GNU
+.I findutils
+online help: <https://www.gnu.org/software/findutils/#get-help>
 .br
 Report any translation bugs to <https://translationproject.org/team/>
-.PP
+.P
 Report any other issue via the form at the GNU Savannah bug tracker:
 .RS
 <https://savannah.gnu.org/bugs/?group=findutils>
 .RE
-General topics about the GNU findutils package are discussed at the
+General topics about the GNU
+.I findutils
+package are discussed at the
 .I bug\-findutils
 mailing list:
 .RS
@@ -585,7 +700,7 @@ mailing list:
 .RE
 .
 .SH COPYRIGHT
-Copyright \(co 1990\(en2026 Free Software Foundation, Inc.
+Copyright \(co 1990\*(en2026 Free Software Foundation, Inc.
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 .br
 This is free software: you are free to change and redistribute it.
@@ -600,7 +715,7 @@ There is NO WARRANTY, to the extent permitted by law.
 .BR execvp (3),
 .BR locatedb (5),
 .BR signal (7)
-.PP
+.P
 Full documentation <https://www.gnu.org/software/findutils/xargs>
 .br
 or available locally via:
